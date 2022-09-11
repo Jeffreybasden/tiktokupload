@@ -18,8 +18,8 @@ async function uploadVideo(){
     })
     const page = await browser.newPage()
     page.setViewport({width:1300,height:1000})
-    // await start(page)
-    // await downloadSnap(page)
+    await start(page)
+    await downloadSnap(page)
     
      for(let video of currentVideos){
          try{
@@ -108,8 +108,8 @@ async function downloadSnap(page){
             await page.waitForTimeout(6000)
             await page.type('#url',obj.src)
             await page.click('#submiturl')
-            await page.waitForSelector('#download-block > div > a:nth-child(2)')
-            await page.click('#download-block > div > a:nth-child(2)')
+            await page.waitForSelector('#snaptik-video > article > div.snaptik-right > div > a:nth-child(2)')
+            await page.click('#snaptik-video > article > div.snaptik-right > div > a:nth-child(2)')
             await page.waitForTimeout(9000)
             obj.downloaded = 'yes'
             console.log(obj.src)

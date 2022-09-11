@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer')
+
 const fs = require('fs')
 
 async function start(page){
@@ -29,31 +29,34 @@ let videoNames = await page.evaluate(()=>{
     })
 })
 if(videoNames.length > currentVideos.length &&currentVideos.length > 3){
+    
     let cutNum = videoNames.length - currentVideos.length
-    videoNames = videoNames.splice(0,cutNum)
+    videoNames = videoNames.sort((a,b)=>b.id-a.id)
+    videoNames = videoNames.splice(cutNum,videoNames.length)
     
     videoNames.forEach(v=>{
         currentVideos.push(v)
         console.log(v)
     })
 
-    fs.writeFileSync('./videos.json',JSON.stringify(currentVideos))
+    fs.writeFile('./videos.json',JSON.stringify(currentVideos),()=>console.log('written'))
     
 }else if(videoNames.length == currentVideos.length){
     console.log('Same Array')
-    fs.writeFileSync('./videos.json',JSON.stringify(currentVideos))
+
+    fs.writeFile('./videos.json',JSON.stringify(currentVideos),()=>console.log('written'))
    
 }else{
     
     videoNames = videoNames.sort((a,b)=> b.id-a.id)
-    fs.writeFileSync('./videos.json',JSON.stringify(videoNames))
+    fs.writeFile('./videos.json',JSON.stringify(videoNames),()=>console.log('written'))
     
 }
 
 await console.log(videoNames.length)
 await console.log(currentVideos.length)
 await console.log('done')
-await console.log(page)
+
 
 
 }
