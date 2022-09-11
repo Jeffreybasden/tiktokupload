@@ -1,0 +1,14 @@
+{
+  "name": "tiktokbanger",
+  "version": "1.0.0",
+  "description": "Download your tiktok likes and uploads them to your youtube",
+  "main": "uploadyoutube.js",
+  "scripts": {
+    "test": "start"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^17.1.3"
+  }
+}
