@@ -17,7 +17,7 @@ async function uploadVideo(){
         executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
     })
     const page = await browser.newPage()
-    page.setViewport({width:1300,height:1000})
+    await page.setViewport({width:1000,height:900})
     await start(page)
     await downloadSnap(page)
     
@@ -33,24 +33,29 @@ async function uploadVideo(){
                 ])
                 console.log(video.src)
                 await fileChooser.accept([video.filepath])
+                await new Promise(r => setTimeout(r, 8000));
                 await page.waitForSelector('#textbox')
-                await page.waitForTimeout(5000)
+                await new Promise(r => setTimeout(r, 8000));
                 await page.type('#textbox',video.title)
+                await new Promise(r => setTimeout(r, 8000));
+                await page.waitForSelector('#description-textbox')
                 await page.type('#description-textarea',video.des)
-                await page.waitForTimeout(5000)
+                await new Promise(r => setTimeout(r, 8000));
                 autoScroll(page)
                 await page.click('#audience > ytkc-made-for-kids-select > div.made-for-kids-rating-container.style-scope.ytkc-made-for-kids-select > tp-yt-paper-radio-group > tp-yt-paper-radio-button:nth-child(2)')
-                await page.waitForTimeout(9000)
-                await page.click('#next-button > div')
-                await page.waitForTimeout(9000)
+                await new Promise(r => setTimeout(r, 9000));
                 await page.click('#next-button')
-                await page.waitForTimeout(9000)
+                await new Promise(r => setTimeout(r, 9000));
                 await page.click('#next-button')
-                await page.waitForTimeout(9000)
+                await new Promise(r => setTimeout(r, 8000));
+                await page.click('#next-button')
+                await new Promise(r => setTimeout(r, 7000));
                 await page.click('#privacy-radios > tp-yt-paper-radio-button:nth-child(19)')
+                await page.waitForSelector('#done-button')
                 await page.click('#done-button')
                 video.uploaded = 'yes'
-                await page.waitForTimeout(70000)
+                await new Promise(r => setTimeout(r, 10000));
+                await page.waitForNetworkIdle({idleTime:1})
                 console.log(counts)
                 if(video.uploaded === 'yes'){
                     fs.unlinkSync(video.filepath)
@@ -60,6 +65,7 @@ async function uploadVideo(){
              }
         }catch(err){
             if(err){
+                console.log(err)
                 continue;
             }
                

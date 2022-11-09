@@ -4,7 +4,6 @@ const fs = require('fs')
 async function start(page){
 
 await page.goto('https://www.tiktok.com/@nassaumgck?lang=en')
-await page.waitForSelector('#app > div.tiktok-ywuvyb-DivBodyContainer.e1irlpdw0 > div.tiktok-w4ewjk-DivShareLayoutV2.elmjn4l0 > div > div.tiktok-xuns3v-DivShareLayoutMain.ee7zj8d4 > div.tiktok-1k5e4nr-DivVideoFeedTab-StyledDivVideoFeedTabV2.e9uh1830')
 await page.waitForTimeout(5000)
 await page.click('#app > div.tiktok-ywuvyb-DivBodyContainer.e1irlpdw0 > div.tiktok-w4ewjk-DivShareLayoutV2.elmjn4l0 > div > div.tiktok-xuns3v-DivShareLayoutMain.ee7zj8d4 > div.tiktok-1k5e4nr-DivVideoFeedTab-StyledDivVideoFeedTabV2.e9uh1830 ')
 await autoScroll(page)
