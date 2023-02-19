@@ -3,12 +3,12 @@ const fs = require('fs')
 const start = require('./linkfinder')
 currentVideos =  fs.readFileSync('./videos.json')
 currentVideos =  JSON.parse(currentVideos)
+const VideosDir = fs.readdirSync("./noWaterMarkVideos")
 let counts = 0
 
 
 uploadVideo()
    
-
 async function uploadVideo(){
    
     const browser = await puppeteer.launch({headless:false,args:[
@@ -18,12 +18,12 @@ async function uploadVideo(){
     })
     const page = await browser.newPage()
     await page.setViewport({width:1000,height:900})
-    await start(page)
-    await downloadSnap(page)
-    
+    // await start(page)
+    currentVideos = await downloadSnap(page,currentVideos) 
+    await new Promise(r=> setTimeout(r,5000))
      for(let video of currentVideos){
          try{
-         if(video.uploaded === 'no'){
+         if(video.uploaded === 'no' && VideosDir.includes(video.filepath.split('/')[2])){
 
                 await page.goto('https://studio.youtube.com/channel/UCp-G873UKXHFFThwYvrjN_g/videos/upload?d=ud&filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D')
                 await page.waitForSelector('#select-files-button')
@@ -34,12 +34,10 @@ async function uploadVideo(){
                 console.log(video.src)
                 await fileChooser.accept([video.filepath])
                 await new Promise(r => setTimeout(r, 8000));
-                await page.waitForSelector('#textbox')
-                await new Promise(r => setTimeout(r, 8000));
-                await page.type('#textbox',video.title)
-                await new Promise(r => setTimeout(r, 8000));
-                await page.waitForSelector('#description-textbox')
-                await page.type('#description-textarea',video.des)
+                await page.type('#title-textarea',video.title)
+                await new Promise(r => setTimeout(r, 10000));
+                await page.click('#description-textarea')
+                await page.type('#description',`${video.des}  #shorts #funny #tiktok`)
                 await new Promise(r => setTimeout(r, 8000));
                 autoScroll(page)
                 await page.click('#audience > ytkc-made-for-kids-select > div.made-for-kids-rating-container.style-scope.ytkc-made-for-kids-select > tp-yt-paper-radio-group > tp-yt-paper-radio-button:nth-child(2)')
@@ -70,7 +68,7 @@ async function uploadVideo(){
             }
                
         }
-        if(counts >= 1){
+        if(counts >= 2){
             break;
         }
     }
@@ -80,10 +78,6 @@ async function uploadVideo(){
         browser.close()
 }
         
-    
-  
-    
-
 async function autoScroll(page){
     await page.evaluate(async () => {
         await new Promise((resolve, reject) => {
@@ -93,7 +87,6 @@ async function autoScroll(page){
                 var scrollHeight = document.body.scrollHeight;
                 window.scrollBy(0, distance);
                 totalHeight += distance;
-
                 if(totalHeight >= scrollHeight - window.innerHeight){
                     clearInterval(timer);
                     resolve();
@@ -104,46 +97,45 @@ async function autoScroll(page){
 }
 
 
-async function downloadSnap(page){
-   
-    
-
-    for( obj of currentVideos){
-        if(obj.downloaded ==='no'){
+async function downloadSnap(page, vidobj){
+    for( video of vidobj){
+        if(video.downloaded ==='no'){
             await page.goto('https://snaptik.app/en')
             await page.waitForTimeout(6000)
-            await page.type('#url',obj.src)
-            await page.click('#submiturl')
-            await page.waitForSelector('#snaptik-video > article > div.snaptik-right > div > a:nth-child(2)')
-            await page.click('#snaptik-video > article > div.snaptik-right > div > a:nth-child(2)')
+            await page.type('#url',video.src)
+            await page.click('div.hero-input-right > button')
             await page.waitForTimeout(9000)
-            obj.downloaded = 'yes'
-            console.log(obj.src)
+            await page.waitForSelector('#download > div > div > div.col-12.col-md-4.offset-md-2 > div > a.btn.btn-main.active.mb-2')
+            await page.click('#download > div > div > div.col-12.col-md-4.offset-md-2 > div > a.btn.btn-main.active.mb-2')
+            await page.waitForTimeout(9000)
+            
         }
     }
-
-    let final = sortVideos(currentVideos)
-    final = JSON.stringify(final)
-    fs.writeFileSync('./videos.json',final)
-    console.log('videos downloaded with no errors')
-   
+        let files = fs.readdirSync('./noWaterMarkVideos')
+        if(files.length > 0){
+            vidobj = vidobj.map(videos=>{
+        
+                filePath = files.filter(file=> file.split('_')[1].split('.')[0] === videos.src.split('/')[5])
+                if(filePath.length > 0){
+                    videos.filepath = `./noWaterMarkVideos/${filePath[0]}`
+                    console.log("file path added")
+                    console.log(videos.filepath)
+                } 
+                videos.downloaded = 'yes'
+                console.log(videos.filepath)
+                return videos
+            })
+        }
+    
+    return vidobj
+    
 }
 
 
 
 
 
-const sortVideos = (videosArr)=>{
-let files = fs.readdirSync('./nowatermarkvideos')
-videosArr.forEach(video=>{
-    filePath = files.filter(file=> file.split('_')[1] === video.src.split('/')[5])
-    if(filePath.length > 0){
-        video.filepath = `./nowatermarkvideos/${filePath[0]}`
-        console.log(video.filepath)
-    } 
-})
-return videosArr    
-}
+
 
 
 

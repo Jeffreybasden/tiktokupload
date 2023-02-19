@@ -4,7 +4,7 @@ let Videos = fs.readFileSync('./videos.json')
 Videos = JSON.parse(Videos)
 
 Videos.forEach((vid,ind)=>{
-    if(ind<=278){
+    if(ind<=319){
         vid.uploaded = 'yes'
         vid.downloaded ='yes'
     }
