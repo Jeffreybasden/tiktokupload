@@ -12,13 +12,13 @@ uploadVideo()
 async function uploadVideo(){
    
     const browser = await puppeteer.launch({headless:false,args:[
-        '--user-data-dir=%userprofile%\\AppData\\Local\\Chrome\\User Data',
+        '--user-data-dir=%userprofile%\\AppData\\Local\\Chrome\\UserData',
         '--profile-directory=Profile 1' ],
         executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
     })
     const page = await browser.newPage()
     await page.setViewport({width:1000,height:900})
-    // await start(page)
+    await start(page)
     currentVideos = await downloadSnap(page,currentVideos) 
     await new Promise(r=> setTimeout(r,5000))
      for(let video of currentVideos){
@@ -33,8 +33,14 @@ async function uploadVideo(){
                 ])
                 console.log(video.src)
                 await fileChooser.accept([video.filepath])
-                await new Promise(r => setTimeout(r, 8000));
-                await page.type('#title-textarea',video.title)
+                await new Promise(r => setTimeout(r, 10000));
+                await page.click('#title-textarea')
+                await page.keyboard.press('End', {delay:1000})
+                for(let i = 0; i<=video.filepath.length; i++){
+                    await page.keyboard.press('Backspace')
+                }
+                await new Promise(r => setTimeout(r, 10000));
+                await page.type('#title-textarea','Subscribe for more funny shorts! #shorts #funny #fyp')
                 await new Promise(r => setTimeout(r, 10000));
                 await page.click('#description-textarea')
                 await page.type('#description',`${video.des}  #shorts #funny #tiktok`)
@@ -68,7 +74,7 @@ async function uploadVideo(){
             }
                
         }
-        if(counts >= 2){
+        if(counts >= 1){
             break;
         }
     }
