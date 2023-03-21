@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "mongodb": "^5.1.0",
+    "mongoose": "^7.0.2",
     "puppeteer": "^17.1.3"
   }
 }

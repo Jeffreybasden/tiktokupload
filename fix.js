@@ -1,16 +1,25 @@
-const fs = require('fs')
+const mongoose = require('mongoose')
+const VideosDB = require('./mogoose')
 
-let Videos = fs.readFileSync('./videos.json')
-Videos = JSON.parse(Videos)
+async function con(){
 
-Videos.forEach((vid,ind)=>{
-    if(ind>=300 && ind <=320 ){
-        vid.uploaded = 'no'
-        vid.downloaded ='no'
+    await mongoose.connect('mongodb://127.0.0.1:27017/videos')
+}
+con()
+ async function update(){
+    try{
+        
+        let Videos = await VideosDB.find({})
+        Videos.forEach((vid,ind)=>{
+            if(ind<=393){
+                vid.uploaded = 'yes'
+                vid.downloaded ='yes'
+            }
+        })
+        
+        await VideosDB.bulkSave(Videos)
+    }catch(err){
+        console.log(err)
     }
-})
-
-Videos = JSON.stringify(Videos)
-fs.writeFile('./videos.json',Videos,()=>{
-    console.log('fixed!')
-})
+}
+update()

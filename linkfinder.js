@@ -1,5 +1,5 @@
 
-const fs = require('fs')
+const VideosDB = require('./mogoose')
 
 async function start(page){
 
@@ -8,9 +8,9 @@ await page.waitForTimeout(5000)
 await page.click('.tiktok-1dcmmcm-PLike')
 await autoScroll(page)
 await page.waitForTimeout(5000)
-let currentVideos = fs.readFileSync('./videos.json')
-currentVideos = await JSON.parse(currentVideos)
+let currentVideos = await VideosDB.find({})
 
+ 
 
 let videoNames = await page.evaluate(()=>{
     let count = 0
@@ -27,35 +27,33 @@ let videoNames = await page.evaluate(()=>{
         return obj
     })
 })
-console.log(videoNames)
-if(videoNames.length > currentVideos.length && currentVideos.length > 3){
-    
+
+if(videoNames.length > currentVideos.length && currentVideos.length > 3){ 
     let cutNum = videoNames.length - currentVideos.length
-    videoNames = videoNames.sort((a,b)=>b.id-a.id)
-    videoNames = videoNames.splice(cutNum,videoNames.length)
-    
+    videoNames =  videoNames.sort((a,b)=>b.id-a.id)
+    videoNames = videoNames.slice(videoNames.length - cutNum,videoNames.length)
     videoNames.forEach(v=>{
         currentVideos.push(v)
         console.log(v)
     })
+    await VideosDB.bulkSave(currentVideos)
+     console.log('new vids!')
 
-    fs.writeFile('./videos.json',JSON.stringify(currentVideos),()=>console.log("new1"))
-    
 }else if(videoNames.length == currentVideos.length){
     console.log('Same Array')
+    await VideosDB.bulkSave(currentVideos)
+     
 
-    fs.writeFile('./videos.json',JSON.stringify(currentVideos),()=>console.log("new2"))
-   
 }else{
-    
-    videoNames = videoNames.sort((a,b)=> b.id-a.id)
-    fs.writeFile('./videos.json',JSON.stringify(videoNames),()=>console.log("new3"))
-    
+    videoNames = await videoNames.sort((a,b)=> b.id-a.id)
+     VideosDB.insertMany(videoNames)
+     
+     console.log('new')
 }
 
-await console.log(videoNames.length)
-await console.log(currentVideos.length)
-await console.log('done')
+console.log(videoNames.length)
+console.log(currentVideos.length)
+console.log('done')
 
 
 

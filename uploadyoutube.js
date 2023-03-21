@@ -1,24 +1,30 @@
 const puppeteer = require('puppeteer')
 const fs = require('fs')
+const mongoose = require('mongoose')
+const VideosDB = require('./mogoose')
 const start = require('./linkfinder')
-currentVideos =  fs.readFileSync('./videos.json')
-currentVideos =  JSON.parse(currentVideos)
 const VideosDir = fs.readdirSync("./noWaterMarkVideos")
 let counts = 0
 
 
+const Server = async() =>{
+    await mongoose.connect('mongodb://127.0.0.1:27017/videos')
+}
+Server()
+
 uploadVideo()
-   
+
 async function uploadVideo(){
-   
     const browser = await puppeteer.launch({headless:false,args:[
         '--user-data-dir=%userprofile%\\AppData\\Local\\Chrome\\UserData',
-        '--profile-directory=Profile 1' ],
-        executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
-    })
-    const page = await browser.newPage()
-    await page.setViewport({width:1000,height:900})
-    await start(page)
+        '--profile-directory=Profile 1' 
+    ],
+    executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+})
+const page = await browser.newPage()
+await page.setViewport({width:1000,height:900})
+await start(page)
+let currentVideos = await VideosDB.find({})
     currentVideos = await downloadSnap(page,currentVideos) 
     await new Promise(r=> setTimeout(r,5000))
      for(let video of currentVideos){
@@ -71,15 +77,14 @@ async function uploadVideo(){
             if(err){
                 console.log(err)
                 continue;
-            }
-               
+            }     
         }
         if(counts >= 1){
             break;
         }
     }
-        currentVideos = JSON.stringify(currentVideos)
-        fs.writeFileSync('./videos.json', currentVideos)
+        
+       VideosDB.bulkSave(currentVideos)
         console.log('Uploaded done for the day!')
         browser.close()
 }
