@@ -5,7 +5,7 @@ async function start(page){
 
 await page.goto('https://www.tiktok.com/@nassaumgck?lang=en')
 await page.waitForTimeout(5000)
-await page.click('.tiktok-1dcmmcm-PLike')
+await page.click('#main-content-others_homepage > div > div.tiktok-833rgq-DivShareLayoutMain.ee7zj8d4 > div.tiktok-1ilo35b-DivVideoFeedTab.e1jjp0pq0 > p.tiktok-eiccdj-PLike.e1jjp0pq2')
 await autoScroll(page)
 await page.waitForTimeout(5000)
 let currentVideos = await VideosDB.find({})
@@ -30,23 +30,18 @@ let videoNames = await page.evaluate(()=>{
 
 if(videoNames.length > currentVideos.length && currentVideos.length > 3){ 
     let cutNum = videoNames.length - currentVideos.length
+    
     videoNames =  videoNames.sort((a,b)=>b.id-a.id)
-    videoNames = videoNames.slice(videoNames.length - cutNum,videoNames.length)
-    videoNames.forEach(v=>{
-        currentVideos.push(v)
-        console.log(v)
-    })
-    await VideosDB.bulkSave(currentVideos)
-     console.log('new vids!')
+    videoNames = videoNames.slice(videoNames.length - (cutNum+1),videoNames.length+1)
+    await VideosDB.insertMany(videoNames)
 
+     console.log('new vids!')
+    console.log(cutNum)
 }else if(videoNames.length == currentVideos.length){
     console.log('Same Array')
-    await VideosDB.bulkSave(currentVideos)
-     
-
 }else{
     videoNames = await videoNames.sort((a,b)=> b.id-a.id)
-     VideosDB.insertMany(videoNames)
+     await VideosDB.insertMany(videoNames)
      
      console.log('new')
 }

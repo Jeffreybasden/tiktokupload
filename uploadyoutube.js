@@ -83,8 +83,9 @@ let currentVideos = await VideosDB.find({})
             break;
         }
     }
-        
-       VideosDB.bulkSave(currentVideos)
+        currentVideos.forEach(async(vid)=>{
+            await VideosDB.findByIdAndUpdate({_id:vid._id}, vid)
+        })
         console.log('Uploaded done for the day!')
         browser.close()
 }

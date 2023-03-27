@@ -10,14 +10,14 @@ con()
     try{
         
         let Videos = await VideosDB.find({})
-        Videos.forEach((vid,ind)=>{
+        Videos.forEach(async(vid,ind)=>{
             if(ind<=393){
                 vid.uploaded = 'yes'
                 vid.downloaded ='yes'
+                await VideosDB.findByIdAndUpdate({_id:vid._id}, vid)
             }
         })
         
-        await VideosDB.bulkSave(Videos)
     }catch(err){
         console.log(err)
     }
