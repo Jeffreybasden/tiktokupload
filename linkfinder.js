@@ -35,11 +35,11 @@ if(videoNames.length > currentVideos.length && currentVideos.length > 3){
     videoNames = videoNames.slice(videoNames.length - (cutNum+1),videoNames.length+1)
     await VideosDB.insertMany(videoNames)
 
-     console.log('new vids!')
+    console.log('new vids!')
     console.log(cutNum)
 }else if(videoNames.length == currentVideos.length){
     console.log('Same Array')
-}else{
+}else if(currentVideos.length <=0){
     videoNames = await videoNames.sort((a,b)=> b.id-a.id)
      await VideosDB.insertMany(videoNames)
      

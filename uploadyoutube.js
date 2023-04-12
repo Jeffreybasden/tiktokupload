@@ -5,40 +5,48 @@ const VideosDB = require('./mogoose')
 const start = require('./linkfinder')
 const VideosDir = fs.readdirSync("./noWaterMarkVideos")
 let counts = 0
-
-
+let browser
+let page
+let interval = 21600000
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
 const Server = async() =>{
     await mongoose.connect('mongodb://127.0.0.1:27017/videos')
 }
 Server()
 
 uploadVideo()
-
 async function uploadVideo(){
-    const browser = await puppeteer.launch({headless:false,args:[
-        '--user-data-dir=%userprofile%\\AppData\\Local\\Chrome\\UserData',
-        '--profile-directory=Profile 1' 
+   
+    if(page === undefined){
+        browser = await puppeteer.launch({headless:false,args:[
+            '--user-data-dir=%userprofile%\\AppData\\Local\\Chrome\\UserData',
+            '--profile-directory=Profile 1' 
     ],
     executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
 })
-const page = await browser.newPage()
+page = await browser.newPage()
 await page.setViewport({width:1000,height:900})
+    
+}else{
+    console.log('not the first call.')
+    
+}
 await start(page)
+await downloadSnap(page, await VideosDB.find({})) 
 let currentVideos = await VideosDB.find({})
-    currentVideos = await downloadSnap(page,currentVideos) 
-    await new Promise(r=> setTimeout(r,5000))
-     for(let video of currentVideos){
+await new Promise(r=> setTimeout(r,5000))
+for(let video of currentVideos){
          try{
-         if(video.uploaded === 'no' && VideosDir.includes(video.filepath.split('/')[2])){
-
-                await page.goto('https://studio.youtube.com/channel/UCp-G873UKXHFFThwYvrjN_g/videos/upload?d=ud&filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D')
-                await page.waitForSelector('#select-files-button')
-                let [fileChooser] = await Promise.all([
-                    page.waitForFileChooser(),
-                    page.click('#select-files-button')
-                ])
-                console.log(video.src)
-                await fileChooser.accept([video.filepath])
+             if(video.uploaded === 'no' && VideosDir.includes(video.filepath.split('/')[2])){
+                 
+                 await page.goto('https://studio.youtube.com/channel/UCp-G873UKXHFFThwYvrjN_g/videos/upload?d=ud&filter=%5B%5D&sort=%7B%22columnType%22%3A%22date%22%2C%22sortOrder%22%3A%22DESCENDING%22%7D')
+                 await page.waitForSelector('#select-files-button')
+                 let [fileChooser] = await Promise.all([
+                     page.waitForFileChooser(),
+                     page.click('#select-files-button')
+                    ])
+                    console.log(video.src)
+                    await fileChooser.accept([video.filepath])
                 await new Promise(r => setTimeout(r, 10000));
                 await page.click('#title-textarea')
                 await page.keyboard.press('End', {delay:1000})
@@ -72,7 +80,7 @@ let currentVideos = await VideosDB.find({})
                     console.log('video deleted')
                     counts++
                 }
-             }
+            }
         }catch(err){
             if(err){
                 console.log(err)
@@ -83,11 +91,14 @@ let currentVideos = await VideosDB.find({})
             break;
         }
     }
-        currentVideos.forEach(async(vid)=>{
-            await VideosDB.findByIdAndUpdate({_id:vid._id}, vid)
-        })
-        console.log('Uploaded done for the day!')
-        browser.close()
+    currentVideos.forEach(async(vid)=>{
+        
+        await VideosDB.findByIdAndUpdate({_id:vid._id}, vid)
+    })
+    console.log('Uploaded done for the day!')
+    page.close()
+    page = await browser.newPage()
+    setInterval(uploadVideo,interval)
 }
         
 async function autoScroll(page){
@@ -113,33 +124,30 @@ async function downloadSnap(page, vidobj){
     for( video of vidobj){
         if(video.downloaded ==='no'){
             await page.goto('https://snaptik.app/en')
-            await page.waitForTimeout(6000)
+            await  await new Promise(r => setTimeout(r, 10000));
             await page.type('#url',video.src)
             await page.click('div.hero-input-right > button')
-            await page.waitForTimeout(9000)
-            await page.waitForSelector('#download > div > div > div.col-12.col-md-4.offset-md-2 > div > a.btn.btn-main.active.mb-2')
+            await  await new Promise(r => setTimeout(r, 10000));
+            await  await new Promise(r => setTimeout(r, 10000));
             await page.click('#download > div > div > div.col-12.col-md-4.offset-md-2 > div > a.btn.btn-main.active.mb-2')
-            await page.waitForTimeout(9000)
-            
+            await  await new Promise(r => setTimeout(r, 10000)); 
         }
     }
         let files = fs.readdirSync('./noWaterMarkVideos')
         if(files.length > 0){
-            vidobj = vidobj.map(videos=>{
-        
+             vidobj.map(async videos=>{
                 filePath = files.filter(file=> file.split('_')[1].split('.')[0] === videos.src.split('/')[5])
                 if(filePath.length > 0){
                     videos.filepath = `./noWaterMarkVideos/${filePath[0]}`
                     console.log("file path added")
+                    videos.downloaded = 'yes'
+                    await videos.save()
                     console.log(videos.filepath)
                 } 
-                videos.downloaded = 'yes'
-                console.log(videos.filepath)
-                return videos
+                
             })
         }
-    
-    return vidobj
+   
     
 }
 
