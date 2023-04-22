@@ -131,10 +131,10 @@ async function downloadSnap(page, vidobj){
             await page.goto('https://snaptik.app/en')
             await  await new Promise(r => setTimeout(r, 10000));
             await page.type('#url',video.src)
-            await page.click('div.hero-input-right > button')
+            await page.click('#hero > div > form > button')
             await  await new Promise(r => setTimeout(r, 10000));
             await  await new Promise(r => setTimeout(r, 10000));
-            await page.click('#download > div > div > div.col-12.col-md-4.offset-md-2 > div > a.btn.btn-main.active.mb-2')
+            await page.click('#download > div > div.video-links > a:nth-child(1)')
             await  await new Promise(r => setTimeout(r, 10000)); 
         }
     }
