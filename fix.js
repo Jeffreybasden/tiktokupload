@@ -11,9 +11,9 @@ con()
         
         let Videos = await VideosDB.find({})
         Videos.forEach(async(vid,ind)=>{
-            if(ind>=479){
-                vid.uploaded = 'no'
-                vid.downloaded ='no'
+            if(ind<=393){
+                vid.uploaded = 'yes'
+                vid.downloaded ='yes'
                 await VideosDB.findByIdAndUpdate({_id:vid._id}, vid)
             }
         })

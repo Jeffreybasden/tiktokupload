@@ -5,9 +5,9 @@ const VideosDB = require('./mogoose')
 const start = require('./linkfinder')
 const VideosDir = fs.readdirSync("./noWaterMarkVideos")
 let counts = 0
-let browser
-let page
-let interval = 21600000
+var browser
+var page
+var interval = 21600000
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 const Server = async() =>{
     await mongoose.connect('mongodb://127.0.0.1:27017/videos')
@@ -19,17 +19,20 @@ async function uploadVideo(){
    
     if(page === undefined){
         browser = await puppeteer.launch({headless:false,args:[
-            '--user-data-dir=%userprofile%\\AppData\\Local\\Chrome\\UserData',
-            '--profile-directory=Profile 1' 
+            '--user-data-dir=C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data'
     ],
     executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
 })
 page = await browser.newPage()
-await page.setViewport({width:1000,height:900})
+await page.setViewport({width:1050,height:900})
     
 }else{
     console.log('not the first call.')
-    
+    await  page.close()
+    page = await browser.newPage()
+    await page.setViewport({width:1050,height:900})
+
+
 }
 await start(page)
 await downloadSnap(page, await VideosDB.find({})) 
@@ -62,6 +65,7 @@ for(let video of currentVideos){
                 autoScroll(page)
                 await page.click('#audience > ytkc-made-for-kids-select > div.made-for-kids-rating-container.style-scope.ytkc-made-for-kids-select > tp-yt-paper-radio-group > tp-yt-paper-radio-button:nth-child(2)')
                 await new Promise(r => setTimeout(r, 9000));
+                await page.waitForSelector('#next-button')
                 await page.click('#next-button')
                 await new Promise(r => setTimeout(r, 9000));
                 await page.click('#next-button')
@@ -73,7 +77,6 @@ for(let video of currentVideos){
                 await page.click('#done-button')
                 video.uploaded = 'yes'
                 await new Promise(r => setTimeout(r, 10000));
-                await page.waitForNetworkIdle({idleTime:1})
                 console.log(counts)
                 if(video.uploaded === 'yes'){
                     fs.unlinkSync(video.filepath)
@@ -84,21 +87,23 @@ for(let video of currentVideos){
         }catch(err){
             if(err){
                 console.log(err)
-                continue;
+                break;
             }     
         }
         if(counts >= 1){
+            
             break;
+
         }
     }
     currentVideos.forEach(async(vid)=>{
         
         await VideosDB.findByIdAndUpdate({_id:vid._id}, vid)
+
     })
     console.log('Uploaded done for the day!')
-    page.close()
-    page = await browser.newPage()
-    setInterval(uploadVideo,interval)
+    counts--
+    return setInterval(uploadVideo,interval)
 }
         
 async function autoScroll(page){

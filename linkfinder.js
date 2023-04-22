@@ -5,7 +5,7 @@ async function start(page){
 
 await page.goto('https://www.tiktok.com/@nassaumgck?lang=en')
 await page.waitForTimeout(5000)
-await page.click('#main-content-others_homepage > div > div.tiktok-833rgq-DivShareLayoutMain.ee7zj8d4 > div.tiktok-1ilo35b-DivVideoFeedTab.e1jjp0pq0 > p.tiktok-eiccdj-PLike.e1jjp0pq2')
+await page.click('#main-content-others_homepage > div > div.tiktok-833rgq-DivShareLayoutMain.ee7zj8d4 > div.tiktok-1ilo35b-DivVideoFeedTab.e1jjp0pq0 > p.tiktok-g8sazn-PLike.e1jjp0pq3')
 await autoScroll(page)
 await page.waitForTimeout(5000)
 let currentVideos = await VideosDB.find({})
