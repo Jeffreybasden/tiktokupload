@@ -7,33 +7,22 @@ const VideosDir = fs.readdirSync("./noWaterMarkVideos")
 let counts = 0
 var browser
 var page
-var interval = 21600000
+var interval = 14400000
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 const Server = async() =>{
     await mongoose.connect('mongodb://127.0.0.1:27017/videos')
 }
 Server()
 
-uploadVideo()
+setInterval(uploadVideo,interval)
 async function uploadVideo(){
-   
-    if(page === undefined){
         browser = await puppeteer.launch({headless:false,args:[
             '--user-data-dir=C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data'
     ],
     executablePath:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
 })
 page = await browser.newPage()
-await page.setViewport({width:1050,height:900})
-    
-}else{
-    console.log('not the first call.')
-    await  page.close()
-    page = await browser.newPage()
-    await page.setViewport({width:1050,height:900})
-
-
-}
+await page.setViewport({width:1050,height:900})   
 await start(page)
 await downloadSnap(page, await VideosDB.find({})) 
 let currentVideos = await VideosDB.find({})
@@ -77,21 +66,23 @@ for(let video of currentVideos){
                 await page.click('#done-button')
                 video.uploaded = 'yes'
                 await new Promise(r => setTimeout(r, 10000));
-                console.log(counts)
+               
                 if(video.uploaded === 'yes'){
                     fs.unlinkSync(video.filepath)
                     console.log('video deleted')
+                    console.log('Uploaded done for the day!')
                     counts++
                 }
             }
         }catch(err){
             if(err){
                 console.log(err)
-                break;
+                continue;
             }     
         }
         if(counts >= 1){
             
+            console.log(counts)
             break;
 
         }
@@ -101,9 +92,11 @@ for(let video of currentVideos){
         await VideosDB.findByIdAndUpdate({_id:vid._id}, vid)
 
     })
-    console.log('Uploaded done for the day!')
     counts--
-    return setInterval(uploadVideo,interval)
+    console.log('upload done')
+    await browser.close()
+    
+  
 }
         
 async function autoScroll(page){
